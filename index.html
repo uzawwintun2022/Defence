@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>စစ်ရေးပြနှင့် ကာကွယ်ရေးပညာ Interactive Quiz</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #059669;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+            --correct-bg: #d1fae5;
+            --correct-text: #065f46;
+            --wrong-bg: #fee2e2;
+            --wrong-text: #991b1b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pyidaungsu', 'Padauk', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding-bottom: 80px;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* Top Sticky Bar for Score Only */
+        .top-bar {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .score-board {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            background: #eff6ff;
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: 1px solid #bfdbfe;
+            text-align: center;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 25px 0 15px 0;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-tab {
+            background-color: #cbd5e1;
+            color: #334155;
+        }
+
+        .btn-tab.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .btn-warning { background-color: #d97706; color: white; }
+        .btn-warning:hover { background-color: #b45309; }
+
+        .btn-download { background-color: #4b5563; color: white; }
+        .btn-download:hover { background-color: #374151; }
+
+        .btn-check { background-color: #059669; color: white; font-size: 1.05rem; padding: 12px 24px; }
+        .btn-check:hover { background-color: #047857; }
+
+        .btn-reset { background-color: #dc2626; color: white; font-size: 1.05rem; padding: 12px 24px; }
+        .btn-reset:hover { background-color: #b91c1c; }
+
+        .section-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 1.2rem;
+        }
+
+        .quiz-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #0f172a;
+            line-height: 2.2rem;
+        }
+
+        .options-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 6px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: #f8fafc;
+            transition: background 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #e2e8f0;
+        }
+
+        .inline-blank-input {
+            display: inline-block;
+            width: 180px;
+            padding: 4px 10px;
+            margin: 0 6px;
+            border: none;
+            border-bottom: 2px solid var(--primary-light);
+            background-color: #f8fafc;
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-align: center;
+            outline: none;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.2s;
+        }
+
+        .inline-blank-input:focus {
+            background-color: #eff6ff;
+            border-bottom-color: var(--secondary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .feedback {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.correct {
+            display: block;
+            background-color: var(--correct-bg);
+            color: var(--correct-text);
+            border: 1px solid #a7f3d0;
+        }
+
+        .feedback.incorrect {
+            display: block;
+            background-color: var(--wrong-bg);
+            color: var(--wrong-text);
+            border: 1px solid #fecaca;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .action-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0 40px 0;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #0f172a;
+            color: #94a3b8;
+            text-align: center;
+            padding: 12px;
+            font-size: 0.9rem;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        @media (max-width: 640px) {
+            .nav-buttons, .action-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-check, .btn-reset {
+                width: 100%;
+            }
+            .inline-blank-input {
+                width: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>စစ်ရေးပြနှင့် ကာကွယ်ရေးပညာ Interactive Quiz</h1>
+    </header>
+
+    <div class="container">
+        <!-- Top Sticky Score Display -->
+        <div class="top-bar">
+            <div class="score-board" id="score-display">
+                <span id="tab-title">အပိုင်း (၁) မှား/မှန်</span> ရမှတ်: <span id="current-score">0</span> / <span id="total-score">0</span>
+            </div>
+        </div>
+
+        <!-- Quiz Form Panels -->
+        <form id="quiz-form">
+            <!-- True / False Tab Panel -->
+            <div id="panel-tf" class="tab-panel active">
+                <div class="section-header">
+                    အပိုင်း (၁) - မှား / မှန် မေးခွန်းများ
+                </div>
+                <div id="tf-container"></div>
+            </div>
+
+            <!-- Fill in the Blank Tab Panel -->
+            <div id="panel-fitb" class="tab-panel">
+                <div class="section-header">
+                    အပိုင်း (၂) - ကွက်လပ်ဖြည့် မေးခွန်းများ
+                </div>
+                <div id="fitb-container"></div>
+            </div>
+        </form>
+
+        <!-- Section Switcher & Downloads -->
+        <div class="nav-buttons">
+            <button class="btn btn-tab active" id="btn-tab-tf" type="button" onclick="switchTab('tf')">မှား / မှန်</button>
+            <button class="btn btn-tab" id="btn-tab-fitb" type="button" onclick="switchTab('fitb')">ကွက်လပ်ဖြည့်</button>
+            <a href="#" class="btn btn-download" onclick="alert('Management.pdf ဒေါင်းလုဒ်ဆွဲရန် ဖိုင်ပြင်ဆင်ထားခြင်းမရှိသေးပါ။')">Management.pdf ဒေါင်းရန်</a>
+            <a href="index.html" download="index.html" class="btn btn-warning">index.html ဒေါင်းရန်</a>
+        </div>
+
+        <!-- Bottom Actions -->
+        <div class="action-container">
+            <button type="button" class="btn btn-check" onclick="checkAnswers()">Check Answer (အဖြေစစ်မည်)</button>
+            <button type="button" class="btn btn-reset" onclick="resetQuiz()">Try Again (ပြန်လည်ဖြေဆိုမည်)</button>
+        </div>
+    </div>
+
+    <footer>
+        Copyright ကသ ၁၄၂
+    </footer>
+
+    <script>
+        const rawTrueFalse = [
+            { id: 1, text: "တန်းစီအမိန့်ရလျှင် ဦးစွာရောက်ရှိသော သင်တန်းသားသည် အမိန့်ပေးသူ ၏ (၄) လှမ်း အကွာတွင် ရပ်ရမည်။", answer: "မှား" },
+            { id: 2, text: "စစ်ရေးပြဆောင်ရွက်ရာတွင် တစ်မိနစ်လျှင် အမြန်လျှောက်သည့် ခြေလှမ်း ရေနှုန်း မှာ ၁၈ဝ နှုန်း ဖြစ်သည်။", answer: "မှား" },
+            { id: 3, text: "ချီတက်စဉ် အလေးရန် ဘယ်ညာကြည့်ခြင်းကို အလေးပြုခံအရာရှိနှင့် (၅) လှမ်း အလိုတွင် စတင် အမိန့်ပေးရသည်။", answer: "မှန်" },
+            { id: 4, text: "သေနတ်ထမ်းလျှက် အနေအထားတွင် ညာလက်ဖျံသည် မြေပြင်နှင့်မျဉ်းပြိုင် ဖြစ် ရမည်။", answer: "မှား" },
+            { id: 5, text: "အမ်အေ (၁) ချေမှုန်းရေးရိုင်ဖယ်သေနတ်၏ သေနတ်ပြောင်းရစ်သည် ညာရစ် ဖြစ်သည်။", answer: "မှန်" },
+            { id: 6, text: "သေနတ်မောင်းခလုတ်အားဆွဲလိုလျှင် ကျည်အိမ်ကို ဖြုတ်၍ သေနတ်အား ဘေးကင်းရာသို့ ဆွဲလှည့်ရမည်။", answer: "မှန်" },
+            { id: 7, text: "အလေးပြုမည့်ဘက် ချီတက်စဉ် အလေးပြုရန် ဘယ်ညာကြည့်ရာတွင် တပ်စု၏ ထိပ်စီးရဲဘော်မှ လွဲရင် ကျန်ရဲဘော်များ ဦးခေါင်း ဘယ်ညာ ၉ဝ ဒီဂရီ လှည့်ရမည်။", answer: "မှား" },
+            { id: 8, text: "နောက်လှည့်ခြင်း အမှတ်စဉ် (၁) အနေအထားတွင် ညာခြေဖျားနှင့် ဘယ်ခြေ ဖနောင့်အကွာအဝေးသည် ၁ လက်မ ရှိရမည်။", answer: "မှန်" },
+            { id: 9, text: "ညာညှိခြင်းအမှတ်စဉ် (၂) တွင် ဘယ်ခြေသည် ရှေ့သို့ ၁၅ လက်မ လှမ်းထုတ် ရမည်။", answer: "မှန်" },
+            { id: 10, text: "အမြန်လျှောက်ရန် အမှတ်စဉ် (၁) တွင် ညာလက်သည် ရှေ့သို့ ကိုယ်နှင့် ၉၀ ဒီဂရီ လွှဲရမည်။", answer: "မှန်" },
+            { id: 11, text: "ရှေ့နောက်တစ်ယောက်ချင်း တန်းစီခြင်းတွင် ရှေ့နောက်တစ်ဦးနှင့် တစ်ဦး အကွာအဝေးသည် လက်တစ်ကမ်းနှင့် ၁၀ လက်မ ရှိရမည်။", answer: "မှန်" },
+            { id: 12, text: "ဒူးထောက်လျှက် အနေအထားဖြင့် ပစ်ခတ်ရာတွင် ရရှိသော မနိမ့်မမြင့် အကာအကွယ်ကို အသုံးပြု၍ ပစ်ခတ်သွားရမည်။", answer: "မှန်" },
+            { id: 13, text: "ပေ ပစ်မှတ်တွင် စက်ဝိုင်းကွင်း တစ်ကွင်းနှင့်တစ်ကွင်း ၆ လက်ကွာခြားသည်။", answer: "မှန်" },
+            { id: 14, text: "အမ်အေ (၁) ချေမှုန်းရေးရိုင်ဖယ် သေနတ်အား ထပ်ဆင့်ဖြုတ်ခြင်း နှင့် ထပ်ဆင့်တပ်ဆင်ခြင်းကို အထက်အရာရှိ၏ ခွင့်ပြုမိန့် ရရှိမှသာ ဆောင်ရွက်နိုင်သည်။", answer: "မှန်" },
+            { id: 15, text: "အရေးပေါ်ကျည်ထိုးခြင်း ကျည်ထုတ်ခြင်းအား အနေအထားအမျိုးမျိုးဖြင့် ပြုလုပ်နိုင်သည်။", answer: "မှန်" },
+            { id: 16, text: "မိမိလက်ဝယ်သို့ သေနတ်တစ်လက်ရောက်ရှိပါက တစ်ဦးနှင့်တဦး ချိန်ခြင်း၊ ပစ်ခတ်ခြင်း အကြောင်းမဲ့ မောင်းခလုတ်ဆွဲခြင်း လုံးဝ မပြုလုပ်ရ။", answer: "မှန်" },
+            { id: 17, text: "လက်နက်မဲ့ သတိအနေအထားတွင် ခြေသန်းနှစ်ခုအား ထိကပ်ထား၍ ညီညာစွာ ထားရှိရမည်။", answer: "မှား" },
+            { id: 18, text: "တန်းဖြုတ်ခြင်းကို အမြန်ပြုလုပ်ရာတွင် ညာလှည်၍ ရှေ့သို့ တစ်လှမ်းလျှောက်၍ ရပ်ပြီးလျှင်လိုရာသို့ အမြန်လျှောက်သွားရမည်။", answer: "မှား" },
+            { id: 19, text: "ညအချိန်ရန်သူ ကြည့်ရှု့ရာတွင် တစ်နေရာတည်းအား စူးစိုက်ကြည့်ရှု့ရမည်။", answer: "မှား" },
+            { id: 20, text: "ကိုယ်စီတိုက်နည်း သင်ခန်းစာအရ ခေတ္တတန်းပြုတ်ရာတွင် သေနတ်ဘယ်မြှ ကိုင်ဆောင်ခြင်းကို အသုံးပြုမည်။", answer: "မှန်" },
+            { id: 21, text: "သေနတ်အား ကြာမြင့်စွာ ချိန်တွယ်မိပါက လက်များညောင်းညာပြီး ပြောင်းလှုပ် ရှားကာ ထိချက်များ ပြန့်ကျဲနေမည်။", answer: "မှန်" },
+            { id: 22, text: "ပစ်ခတ်နေစဉ် ရှေ့ပြေးအဖွဲ့၏ အချက်ပြမှုရလျှင် အမြန်ဆုံး နေရာယူ၍ သေနတ် အသင့် ပြင်ရမည်။", answer: "မှန်" },
+            { id: 23, text: "ရန်သူကို ရှာဖွေရာတွင် ရန်သူအရိပ်အခြေအနေ ရှာဖွေကြည့်ရှု့ခြင်းနည်းများ အသင့် စူးစမ်းလိုသောစိတ်ကို အမြဲပျိုးထောင်လေ့ကျင့်သွားရမည်။", answer: "မှန်" },
+            { id: 24, text: "သေနတ်မြှောက် အလေးပြုအနေအထားတွင် ဘယ်လက်သည် သေနတ်ပြောင်း ကာ ဘယ်ဘက်ဘေးတွင် ထောင်ထားရမည်။", answer: "မှား" },
+            { id: 25, text: "အမ်အေ (၁) ချေမှုန်းရေးရိုင်ဖယ်သေနတ်အား တိုက်ချွတ်ရာ၌ ပြောင်းတိုက်တံ ဆီဗူးနှင့် ဖလံထည် အစတို့ လိုအပ်သည်။", answer: "မှန်" },
+            { id: 26, text: "လယ်ကန်သင်းရိုးများသည် မြင့်သော အကာအကွယ်တွင်ပါသည်", answer: "မှား" },
+            { id: 27, text: "သေနတ်ဖြင့်သက်သာအနေအထား တွင် ခြေဖနောင့်နှစ်ခု အကွာအဝေးသည် ၁၅ လက်မရှိရမည်။", answer: "မှား" },
+            { id: 28, text: "အမ်အေ (၁) ချေမှုန်းရေရိုင်ဖယ်သေနတ်၏ အလျားသည် ၉၇၈ မီလီမီတာ ဖြစ် သည်။", answer: "မှန်" },
+            { id: 29, text: "သေနတ်ချရန် အမှတ်စဉ် (၁) အနေအထားတွင် ဘက်လက်သန်းသည် ပြောင်းကာ အောက်အနားနှင့် တစ်တန်းတည်းရှိရမည်။", answer: "မှား" }
+        ];
+
+        const rawFillBlank = [
+            { text: "_____ အနေအထားတွင်ခေါင်းဆောင် လုပ်သဖြင့် အမိန့်ရလျှင် လှုပ်ရှား နိုင်သည်", answer: "အေးစေ" },
+            { text: "မှောက်လျှက်အနေအထား ခိုင်မြဲစွာကိုင်တွယ်ရန်အတွက် လိုအပ်သော အချက် _____ ချက် ရှိသည်", answer: "၉" },
+            { text: "အတန်းချဲ့ခြင်းနှင့် အတန်းစုခြင်း သင်ခန်းစာ ရည်ရွယ်ချက်မှာ လိုသည့်အခါ _____ ကိုလွယ်ကူစွာ စစ်ဆေးနိုင်ရန်ဖြစ်သည်။", answer: "တပ်ဖွဲ့" },
+            { text: "နောက်လှမ်းဆုတ်ခြင်း သင်ခန်းစာတွင် အလေးပြုနည်းဖြင့် အမျိုးအစား _____ မျိုးရှိသည်။", answer: "၃" },
+            { text: "ဒု ရဲမှုး ကြီးအား သေနတ်ဖြင့်အလေးပြုလျှင် _____ အလေးပြုရမည်။", answer: "သေနတ်မြှောက်" },
+            { text: "သက်သာအနေအထား ခေါင်းပိုင်းတွင် အချက် _____ ချက်ရှိသည်။", answer: "၂" },
+            { text: "အရေးပေါ်ကျည်ထိုးခြင်း ကျည်ထုတ်ခြင်းအား _____ ဖြင့်ပြုလုပ် နိုင်သည်။", answer: "အနေအထားအမျိုးမျိုး" },
+            { text: "ဖြုတ်ရန်ပြင်အနေအထားတွင် _____ အားထောက်ထားရမည်", answer: "ညာဒူး" },
+            { text: "ကျည်ကွယ်အသုံးပြုရာတွင် မိမိဘေးနှင့် _____ ကိုအထူးသတိပြုရမည်", answer: "နောက်" },
+            { text: "တိုက်ပွဲဆင်နွဲမည့် သူတိုင်းသည် တိုက်စွမ်းရည်အပြည့်အဝ ရှိရေးအတွက် _____ ကောင်းမွန်ခြင်းနှင့် ပြည့်စုံရမည်။", answer: "လူ၊လက်နက်၊ကျွမ်းကျင်မှု" },
+            { text: "သတိအနေအထားတွင် သေနတ်၏ _____ သည် ညာခြေသန်းနှင့် တစ်တန်းတည်း ရှိရမည်။", answer: "ဒင်ဦးပိုင်း" },
+            { text: "အမ်အေ (၁) ချေမှုန်းရေးရိုင်ဖယ် သေနတ် အားအောက်ဆုံးသို့ _____ ထားရှိပါက တစ်တောင့်ချင်း ပစ်ခတ်မှု အနေအထားသို့ ရောက်ရှိမည်", answer: "မောင်းပြောင်းခလုတ်" },
+            { text: "သေနတ်ဒင်ရိုက်အလေးပြု အနေအထားမှာ ညာလက်သည် လက်ငါးချောင်းပူးပြီး _____ အလယ်သို့ ရိုက်ရမည်", answer: "ဒင်ပြားအလယ်" },
+            { text: "သေနတ်ထမ်းလျှက် အနေအထားတွင် ဘယ်တံတောင်ဆစ်ကွေး သည် _____ ရှိပြီးကိုယ်နှင့် ကပ်ထားရမည်", answer: "၉၀ ဒီဂရီ" },
+            { text: "အလေးပြုခြင်း အမှတ်စဉ် (၁) တွင် ညာလက်သည် မျက်နှာမူရာအရပ်မှ ညာဘက်သို့ _____ ဆန့်ထုတ်ရမည်။", answer: "၆၀ ဒီဂရီ" },
+            { text: "အမ်အေ (၁) ချေမှုန်းရေး ရိုင်ဖယ် သေနတ်အား တစ်ထောင်ချင်း ပစ်ခတ်မှုတွင် တစ်မိနစ်လျှင် ကျည်အရေအတွက် _____ ပစ်ခတ်နိုင်သည်", answer: "၂၀" },
+            { text: "ဒူးထောက်လျှက်အနေအထား ဖြင့် ပစ်ခတ်ရာတွင် ရရှိနိုင်သော _____ အကာအကွယ်ကို အသုံးပြု၍ ပစ်ခတ်သွားရမည်", answer: "မနိမ့်မမြင့်" },
+            { text: "အမြန်လျှောက်စဉ် လှမ်းကျဲ အကွာအဝေးသည် _____ လက်မ ဖြစ်သည်", answer: "၃၃" },
+            { text: "နောက်လှည့်ခြင်း အမှတ်စဉ် _____ တွင် ဘယ်ညာ ဖနောင့်နှစ်ခုအား မြေတွင် ထောက်၍ နောက်သို့ ခန္ဓာကိုယ်၏ ညာဘက်မှ လှည့်ရမည်", answer: "၂" },
+            { text: "အမြန်လျှောက်ရာတွင် လှမ်းမှန် လျှောက်ခြင်း၏ ခြေတစ်လှမ်း အကွာအဝေးသည် _____ လက်မ ဖြစ်သည်", answer: "၃ဝ" },
+            { text: "ညာတစ်လှမ်းကပ်ရန် အမှတ်စဉ် (၁) တွင် သတိအနေအထားမှ ညာခြေသည် ညာသို့ _____ လက်မ ခွဲထုတ်ရမည်။", answer: "၁၂" },
+            { text: "အတွင်းလိုက်ပစ်ခတ်ရာတွင် တစ်မိနစ်လျှင် ကျည်အရေအတွက် _____ ပစ်ခတ်နိုင်သည်", answer: "၅၀၀" },
+            { text: "စစ်မြေပြင်ကျွမ်းကျင်မှု _____ သည် နေရာမရွေး အသုံးပြုနိုင်သည်။", answer: "အတတ်ပညာ" },
+            { text: "ကိုယ်စီတိုက်ခြင်း သင်ခန်းစာအရ ရှေ့ပြေး ကင်းထောက်အဖြစ် တပ်ဖွဲ့ဝင် _____ ကို တာဝန်ပေး စေလွှတ်နိုင်သည်။", answer: "၃ ဦး" },
+            { text: "ရပ်လျှက်အနေအထားဖြင့် အသုံးပြုနိုင်သည့် အကာအကွယ်မှာ _____ ဖြစ်သည်။", answer: "မြင့်သောအကာအကွယ်" },
+            { text: "သေနတ်မြှောက်အလေးပြု အနေအထားတွင် သေနတ်သည် ခန္ဓာကိုယ်နှင့် _____ လက်မအကွာရှိပြီး ၉ဝ ဒီဂရီ ထောင်လျှက်ရှိရမည်။", answer: "၆" },
+            { text: "သေနတ်အောက်ချရန် အမှတ်စဉ် _____ အနေအထားတွင် သေနတ် ဒင်ခြေသည် မြေပြင်နှင့် ၁ လက်မ အကွာရှိရမည်။", answer: "၂" },
+            { text: "သေနတ်ဖြင့် သက်သာအနေအထားတွင် _____ နှစ်ခု အကွာအဝေးသည် ၁၂ လက်မရှိရမည်။", answer: "ခြေဖနောင့်" },
+            { text: "အမ်အေ (၁) ချေမှုန်းရေး ရိုင်ဖယ်သေနတ်၏ ပြောင်းရစ်သည် _____ ရစ် ဖြစ်သည်။", answer: "ညာ" },
+            { text: "သေနတ် ပစ်ခတ်ခြင်းအား အများဆုံး အနှောင့်အယှက်ပေးသော လေမှာ _____ ဖြစ်သည်။", answer: "ကန့်လန့်ဖြတ်လေ" }
+        ];
+
+        let currentTab = 'tf';
+        let shuffledTF = [];
+        let shuffledFITB = [];
+        let scoreTF = 0;
+        let scoreFITB = 0;
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            let newArr = [...array];
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [newArr[currentIndex], newArr[randomIndex]] = [newArr[randomIndex], newArr[currentIndex]];
+            }
+            return newArr;
+        }
+
+        function initQuiz() {
+            shuffledTF = shuffle(rawTrueFalse);
+            shuffledFITB = shuffle(rawFillBlank);
+            scoreTF = 0;
+            scoreFITB = 0;
+
+            renderTF();
+            renderFITB();
+            updateScoreBoard();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('panel-tf').classList.remove('active');
+            document.getElementById('panel-fitb').classList.remove('active');
+            document.getElementById('btn-tab-tf').classList.remove('active');
+            document.getElementById('btn-tab-fitb').classList.remove('active');
+
+            if (tab === 'tf') {
+                document.getElementById('panel-tf').classList.add('active');
+                document.getElementById('btn-tab-tf').classList.add('active');
+                document.getElementById('tab-title').innerText = "အပိုင်း (၁) မှား/မှန်";
+            } else {
+                document.getElementById('panel-fitb').classList.add('active');
+                document.getElementById('btn-tab-fitb').classList.add('active');
+                document.getElementById('tab-title').innerText = "အပိုင်း (၂) ကွက်လပ်ဖြည့်";
+            }
+
+            updateScoreBoard();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateScoreBoard() {
+            if (currentTab === 'tf') {
+                document.getElementById('current-score').innerText = scoreTF;
+                document.getElementById('total-score').innerText = shuffledTF.length;
+            } else {
+                document.getElementById('current-score').innerText = scoreFITB;
+                document.getElementById('total-score').innerText = shuffledFITB.length;
+            }
+        }
+
+        function renderTF() {
+            const container = document.getElementById('tf-container');
+            container.innerHTML = '';
+
+            shuffledTF.forEach((q, index) => {
+                const qNum = index + 1;
+                const card = document.createElement('div');
+                card.className = 'quiz-card';
+                card.innerHTML = `
+                    <div class="question-text">${qNum}။ ${q.text}</div>
+                    <div class="options-group">
+                        <label class="option-label">
+                            <input type="radio" name="tf_${index}" value="မှန်"> မှန်
+                        </label>
+                        <label class="option-label">
+                            <input type="radio" name="tf_${index}" value="မှား"> မှား
+                        </label>
+                    </div>
+                    <div class="feedback" id="feedback_tf_${index}"></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderFITB() {
+            const container = document.getElementById('fitb-container');
+            container.innerHTML = '';
+
+            shuffledFITB.forEach((q, index) => {
+                const qNum = index + 1;
+                const card = document.createElement('div');
+                card.className = 'quiz-card';
+                
+                const inputHtml = `<input type="text" class="inline-blank-input" id="fitb_${index}" placeholder="အဖြေ..." autocomplete="off">`;
+                const formattedText = q.text.replace('_____', inputHtml);
+
+                card.innerHTML = `
+                    <div class="question-text">${qNum}။ ${formattedText}</div>
+                    <div class="feedback" id="feedback_fitb_${index}"></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function checkAnswers() {
+            if (currentTab === 'tf') {
+                scoreTF = 0;
+                shuffledTF.forEach((q, index) => {
+                    const selected = document.querySelector(`input[name="tf_${index}"]:checked`);
+                    const feedbackDiv = document.getElementById(`feedback_tf_${index}`);
+                    
+                    if (selected) {
+                        if (selected.value === q.answer) {
+                            scoreTF++;
+                            feedbackDiv.className = "feedback correct";
+                            feedbackDiv.innerHTML = `✓ မှန်ကန်ပါသည်။ (အဖြေမှန်: ${q.answer})`;
+                        } else {
+                            feedbackDiv.className = "feedback incorrect";
+                            feedbackDiv.innerHTML = `✗ မှားယွင်းပါသည်။ (အဖြေမှန်: ${q.answer})`;
+                        }
+                    } else {
+                        feedbackDiv.className = "feedback incorrect";
+                        feedbackDiv.innerHTML = `✗ ဖြေဆိုထားခြင်းမရှိပါ။ (အဖြေမှန်: ${q.answer})`;
+                    }
+                });
+            } else {
+                scoreFITB = 0;
+                shuffledFITB.forEach((q, index) => {
+                    const inputEl = document.getElementById(`fitb_${index}`);
+                    const inputVal = inputEl ? inputEl.value.trim() : '';
+                    const feedbackDiv = document.getElementById(`feedback_fitb_${index}`);
+                    
+                    const cleanInput = inputVal.replace(/\s+/g, '');
+                    const cleanAnswer = q.answer.replace(/\s+/g, '');
+
+                    if (cleanInput === cleanAnswer) {
+                        scoreFITB++;
+                        feedbackDiv.className = "feedback correct";
+                        feedbackDiv.innerHTML = `✓ မှန်ကန်ပါသည်။ (အဖြေမှန်: ${q.answer})`;
+                    } else {
+                        feedbackDiv.className = "feedback incorrect";
+                        feedbackDiv.innerHTML = `✗ မှားယွင်းပါသည်။ (အဖြေမှန်: ${q.answer})`;
+                    }
+                });
+            }
+
+            updateScoreBoard();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            initQuiz();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
